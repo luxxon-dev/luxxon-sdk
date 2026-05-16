@@ -1,0 +1,180 @@
+{
+  "manifest_version": "0.3",
+  "name": "luxxon",
+  "display_name": "Luxxon",
+  "version": "0.2.0",
+  "description": "On-demand live vision for AI agents at any lat/lng. Open a session, dispatch an operator, get a live WHEP stream + decoded JPEG frames. Per-second billing in USDC on Base.",
+  "long_description": "Luxxon dispatches a human (or drone / PTZ / fixed camera) to any lat/lng on demand and streams sub-second live video to your agent. Per-second on-chain billing in USDC on Base (Sepolia today, mainnet soon). Headline tool: request_live_view orchestrates open + dispatch + wait-for-LIVE in one call. Companion tools cover frame capture, pricing quotes, coverage discovery, wallet inspection, and post-session settlement.",
+  "author": {
+    "name": "Luxxon",
+    "email": "hello@luxxon.dev",
+    "url": "https://luxxon.dev"
+  },
+  "homepage": "https://luxxon.dev",
+  "documentation": "https://docs.luxxon.dev",
+  "support": "https://github.com/luxxon-dev/luxxon-sdk/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luxxon-dev/luxxon-sdk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "luxxon",
+    "vision",
+    "live-video",
+    "geospatial",
+    "base",
+    "usdc",
+    "agent",
+    "whep",
+    "lat-lng",
+    "mcp"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/server.js"],
+      "env": {
+        "LUXXON_API_KEY": "${user_config.api_key}",
+        "LUXXON_API_URL": "${user_config.api_url}"
+      }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "Luxxon API Key",
+      "description": "Mint one at https://console.luxxon.dev (use a TEST key while on Base Sepolia).",
+      "sensitive": true,
+      "required": true
+    },
+    "api_url": {
+      "type": "string",
+      "title": "API Base URL (optional)",
+      "description": "Override only for staging or self-hosted gateways. Defaults to https://api.luxxon.dev.",
+      "default": "https://api.luxxon.dev",
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "request_live_view",
+      "description": "Open a live session at a lat/lng, dispatch the longest-idle operator in range, and wait for LIVE. Returns sessionId + whepUrl + a hint to call get_frame next.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": { "type": "number", "description": "WGS84 latitude (decimal degrees)" },
+          "lng": { "type": "number", "description": "WGS84 longitude (decimal degrees)" },
+          "maxDurationSeconds": { "type": "number", "description": "Upper bound on session length in seconds" },
+          "quoteId": { "type": "string", "description": "Optional quoteId from get_pricing_quote to lock the rate" },
+          "timeoutMs": { "type": "number", "description": "Max time to wait for LIVE (ms). Default 30000." }
+        },
+        "required": ["lat", "lng", "maxDurationSeconds"]
+      }
+    },
+    {
+      "name": "get_session",
+      "description": "Read the current state of a Luxxon session plus meter fields.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "description": "UUID of the Luxxon session" }
+        },
+        "required": ["sessionId"]
+      }
+    },
+    {
+      "name": "get_frame",
+      "description": "Fetch the latest decoded JPEG frame from a LIVE session. Hand the image straight to a vision model.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "description": "UUID of the Luxxon session" }
+        },
+        "required": ["sessionId"]
+      }
+    },
+    {
+      "name": "get_stream_url",
+      "description": "Return a WHEP playback URL for a LIVE session — for agents with their own WebRTC stack.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "description": "UUID of the Luxxon session" }
+        },
+        "required": ["sessionId"]
+      }
+    },
+    {
+      "name": "end_session",
+      "description": "End a LIVE session. Closes the meter; the relayer settles on-chain shortly after.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "description": "UUID of the Luxxon session" }
+        },
+        "required": ["sessionId"]
+      }
+    },
+    {
+      "name": "cancel_session",
+      "description": "Cancel a pre-LIVE session (REQUESTED or ASSIGNED). For LIVE sessions use end_session.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "description": "UUID of the Luxxon session" }
+        },
+        "required": ["sessionId"]
+      }
+    },
+    {
+      "name": "get_pricing_quote",
+      "description": "Get a price quote for a session at a lat/lng + duration. Returns rate + estimated total in µUSDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": { "type": "number", "description": "WGS84 latitude (decimal degrees)" },
+          "lng": { "type": "number", "description": "WGS84 longitude (decimal degrees)" },
+          "durationSeconds": { "type": "number", "description": "Intended session length in seconds" }
+        },
+        "required": ["lat", "lng", "durationSeconds"]
+      }
+    },
+    {
+      "name": "get_coverage",
+      "description": "Public list of live operator coverage circles. Useful as a pre-flight check before request_live_view.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_wallet",
+      "description": "Workspace pool balance + last on-chain sync block. Use to decide whether to top up.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_settlement",
+      "description": "On-chain settlement state + tx hash for a session post-end_session.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string", "description": "UUID of the Luxxon session" }
+        },
+        "required": ["sessionId"]
+      }
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

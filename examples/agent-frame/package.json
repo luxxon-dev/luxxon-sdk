@@ -1,0 +1,13 @@
+{
+  "name": "@luxxon-examples/agent-frame",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Minimal example: pull a JPEG from a LIVE Luxxon session and save it locally.",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types ./index.ts"
+  },
+  "dependencies": {
+    "@luxxon/sdk": "workspace:*"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@luxxon/sdk",
+  "version": "0.3.0",
+  "description": "TypeScript SDK for the Luxxon API — full surface: sessions, pricing, wallet, settlements, workspaces, API keys, auth.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "rm -rf dist && pnpm build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/luxxon-dev/luxxon-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luxxon-dev/luxxon-sdk.git",
+    "directory": "packages/sdk"
+  },
+  "keywords": [
+    "luxxon",
+    "video",
+    "vision",
+    "agent",
+    "api"
+  ],
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "@types/node": "^25.8.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
