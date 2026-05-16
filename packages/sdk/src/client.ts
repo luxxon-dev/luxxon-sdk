@@ -371,7 +371,7 @@ class WorkspacesResource {
     return this.update(id, { availabilityState: state });
   }
 
-  /** Producer location heartbeat — ~2s cadence while ONLINE. */
+  /** Producer location heartbeat — ~5s cadence while ONLINE. */
   heartbeat(id: string, input: LocationHeartbeatInput): Promise<Workspace> {
     return this.c.json<Workspace>(`/workspaces/${encodeURIComponent(id)}/location`, {
       method: "POST",
