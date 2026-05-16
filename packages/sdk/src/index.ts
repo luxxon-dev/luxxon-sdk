@@ -24,6 +24,7 @@ export type {
   ViewerToken,
   ProducerToken,
   SessionStarted,
+  SessionCancelAllResult,
   // Pricing
   PriceQuote,
   PricingQuoteInput,

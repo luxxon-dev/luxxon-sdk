@@ -22,6 +22,7 @@ import type {
   SelectWorkspaceInput,
   SelectWorkspaceResponse,
   Session,
+  SessionCancelAllResult,
   SessionStarted,
   SettlementView,
   ViewerToken,
@@ -422,6 +423,23 @@ class SessionsResource {
       ? `?workspaceId=${encodeURIComponent(opts.workspaceId)}`
       : "";
     return this.c.json<Session[]>(`/sessions${qs}`);
+  }
+
+  /**
+   * Operator bulk cancel — cancel every `ASSIGNED` session where the
+   * caller's workspace is the operator. Returns the cancelled
+   * session ids and a count. Useful when an operator's device
+   * crashes mid-stream and leaves a workspace stuck `BUSY`. LIVE
+   * sessions are NOT touched — those still go through `end()`
+   * because the meter has to run.
+   *
+   * Requires the `sessions:operate` scope.
+   */
+  cancelAllAssignments(): Promise<SessionCancelAllResult> {
+    return this.c.json<SessionCancelAllResult>(
+      "/sessions/cancel-all-assignments",
+      { method: "POST" },
+    );
   }
 
   /** Fetch a session's current state. Either side of the session can read. */

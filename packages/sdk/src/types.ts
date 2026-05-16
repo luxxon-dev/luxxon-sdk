@@ -87,6 +87,17 @@ export interface SessionStarted {
   whepUrl: string;
 }
 
+/**
+ * Returned from `sessions.cancelAllAssignments()`. The operator's
+ * bulk cancel of every ASSIGNED session their workspace owns.
+ */
+export interface SessionCancelAllResult {
+  /** Number of sessions cancelled. */
+  count: number;
+  /** Cancelled session ids, oldest first by `createdAt`. */
+  cancelled: string[];
+}
+
 /* ──────────────────────────────────────────────────────────────
  * Pricing
  * ──────────────────────────────────────────────────────────── */
