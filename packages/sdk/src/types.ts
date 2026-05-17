@@ -24,6 +24,14 @@ export interface Session {
   operatorWorkspaceId: string | null;
   state: SessionState;
   maxDurationSeconds: number;
+  /**
+   * Pre-LIVE wait deadline in seconds. After
+   * `createdAt + waitTimeoutSeconds` without a first decoded frame
+   * the session flips to EXPIRED. Independent of
+   * `maxDurationSeconds`. Defaults to 300 on the server when the
+   * consumer doesn't pass a value.
+   */
+  waitTimeoutSeconds: number;
   /** Rate per second in µUSDC. String — may exceed JS Number. */
   ratePerSecondMicroUsdc: string;
   /** Pre-authorized hold in µUSDC. */
@@ -38,6 +46,16 @@ export interface Session {
   /** Cloudflare Stream live_input uid while LIVE; null otherwise. */
   videoBackendRef: string | null;
   createdAt: string;
+  /**
+   * Latitude of the requested point. Null only for legacy rows
+   * predating the PostGIS geography column.
+   */
+  requestedLat: number | null;
+  /**
+   * Longitude of the requested point. Null only for legacy rows
+   * predating the PostGIS geography column.
+   */
+  requestedLng: number | null;
   /** Pool model: stays false except in legacy code paths. */
   authorized: boolean;
   /** WHEP playback URL — present when state=LIVE. Session-scoped secret. */
@@ -50,6 +68,13 @@ export interface CreateSessionInput {
   lat: number;
   lng: number;
   maxDurationSeconds: number;
+  /**
+   * Seconds the consumer is willing to wait for media to start.
+   * After `createdAt + waitTimeoutSeconds` the session flips to
+   * EXPIRED without a meter or settlement. Independent of
+   * `maxDurationSeconds`. Server clamps to [5, 3600]; default 300.
+   */
+  waitTimeoutSeconds?: number;
   /** Optional pre-fetched price-quote id to lock the rate at quote time. */
   quoteId?: string;
   /** Optional. Defaults to caller's workspace; required for wallet sessions if it disagrees. */

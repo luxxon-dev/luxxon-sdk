@@ -67,6 +67,12 @@ const RequestLiveViewArg = z.object({
     .describe(
       "Upper bound on session length, in seconds. The meter stops at /end or this duration, whichever is first.",
     ),
+  waitTimeoutSeconds: z
+    .number()
+    .optional()
+    .describe(
+      "Seconds to wait for an operator to start streaming before the session expires without a meter. Independent of maxDurationSeconds (which only bounds the LIVE meter). Server clamps to [5, 3600]; default 300.",
+    ),
   quoteId: z
     .string()
     .optional()
@@ -224,6 +230,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           lat: input.lat,
           lng: input.lng,
           maxDurationSeconds: input.maxDurationSeconds,
+          ...(input.waitTimeoutSeconds !== undefined
+            ? { waitTimeoutSeconds: input.waitTimeoutSeconds }
+            : {}),
           ...(input.quoteId ? { quoteId: input.quoteId } : {}),
         });
 
